@@ -306,14 +306,14 @@ type
   pByteArray = ^TByteArray;
 
   {Forward}
-  TPNGObject = class;
+  TPngImage = class;
   pPointerArray = ^TPointerArray;
   TPointerArray = Array[Word] of Pointer;
 
   {Contains a list of objects}
   TPNGPointerList = class
   private
-    fOwner: TPNGObject;
+    fOwner: TPngImage;
     fCount : Cardinal;
     fMemory: pPointerArray;
     function GetItem(Index: Cardinal): Pointer;
@@ -330,12 +330,12 @@ type
     {Set the size of the list}
     procedure SetSize(const Size: Cardinal);
     {Returns owner}
-    property Owner: TPNGObject read fOwner;
+    property Owner: TPngImage read fOwner;
   public
     {Returns number of items}
     property Count: Cardinal read fCount write SetSize;
     {Object being either created or destroyed}
-    constructor Create(AOwner: TPNGObject);
+    constructor Create(AOwner: TPngImage);
     destructor Destroy; override;
   end;
 
@@ -450,7 +450,7 @@ type
   TFilters = set of TFilter;
 
   {Png implementation object}
-  TPngObject = class{$IFDEF UseDelphi}(TGraphic){$ENDIF}
+  TPngImage = class{$IFDEF UseDelphi}(TGraphic){$ENDIF}
   protected
     {Inverse gamma table values}
     InverseGamma: Array[Byte] of Byte;
@@ -499,7 +499,7 @@ type
     procedure SetWidth(Value: Integer);  {$IFDEF UseDelphi}override; {$ENDIF}
     procedure SetHeight(Value: Integer);  {$IFDEF UseDelphi}override;{$ENDIF}
     {Assigns from another TPNGObject}
-    procedure AssignPNG(Source: TPNGObject);
+    procedure AssignPNG(Source: TPngImage);
     {Returns if the image is empty}
     function GetEmpty: Boolean; {$IFDEF UseDelphi}override; {$ENDIF}
     {Used with property Header}
@@ -613,7 +613,7 @@ type
     fData: Pointer;
     fDataSize: Cardinal;
     {Stores owner}
-    fOwner: TPngObject;
+    fOwner: TPngImage;
     {Stores the chunk name}
     fName: TChunkName;
     {Returns pointer to the TChunkIHDR}
@@ -637,9 +637,9 @@ type
     {Assigns from another TChunk}
     procedure Assign(Source: TChunk); virtual;
     {Returns owner}
-    property Owner: TPngObject read fOwner;
+    property Owner: TPngImage read fOwner;
     {Being destroyed/created}
-    constructor Create(Owner: TPngObject); virtual;
+    constructor Create(Owner: TPngImage); virtual;
     destructor Destroy; override;
     {Returns chunk class/name}
     property Name: String read GetChunkName;
@@ -713,7 +713,7 @@ type
     {Saves the chunk to a stream}
     function SaveToStream(Stream: TStream): Boolean; override;
     {Destructor/constructor}
-    constructor Create(Owner: TPngObject); override;
+    constructor Create(Owner: TPngImage); override;
     destructor Destroy; override;
     {Assigns from another TChunk}
     procedure Assign(Source: TChunk); override;
@@ -753,7 +753,7 @@ type
     function LoadFromStream(Stream: TStream; const ChunkName: TChunkName;
       Size: Integer): Boolean; override;
     {Being created}
-    constructor Create(Owner: TPngObject); override;
+    constructor Create(Owner: TPngImage); override;
     {Assigns from another TChunk}
     procedure Assign(Source: TChunk); override;
   end;
@@ -1274,7 +1274,7 @@ begin
 end;
 
 {Creates a new chunk of this class}
-function CreateClassChunk(Owner: TPngObject; Name: TChunkName): TChunk;
+function CreateClassChunk(Owner: TPngImage; Name: TChunkName): TChunk;
 var
   i       : Integer;
   NewChunk: TChunkClass;
@@ -1480,7 +1480,7 @@ end;
 {TPngPointerList implementation}
 
 {Object being created}
-constructor TPngPointerList.Create(AOwner: TPNGObject);
+constructor TPngPointerList.Create(AOwner: TPngImage);
 begin
   inherited Create; {Let ancestor work}
   {Holds owner}
@@ -1914,7 +1914,7 @@ begin
 end;
 
 {Chunk being created}
-constructor TChunk.Create(Owner: TPngObject);
+constructor TChunk.Create(Owner: TPngImage);
 var
   ChunkName: String;
 begin
@@ -2179,7 +2179,7 @@ end;
 {TChunkIHDR implementation}
 
 {Chunk being created}
-constructor TChunkIHDR.Create(Owner: TPngObject);
+constructor TChunkIHDR.Create(Owner: TPngImage);
 begin
   {Prepare pointers}
   ImageHandle := 0;
@@ -4334,7 +4334,7 @@ begin
 end;
 
 {Gamma chunk being created}
-constructor TChunkgAMA.Create(Owner: TPngObject);
+constructor TChunkgAMA.Create(Owner: TPngImage);
 begin
   {Call ancestor}
   inherited Create(Owner);
@@ -4399,14 +4399,14 @@ end;
 {TPngObject implementation}
 
 {Assigns from another object}
-procedure TPngObject.Assign(Source: TPersistent);
+procedure TPngImage.Assign(Source: TPersistent);
 begin
   {Being cleared}
   if Source = nil then
     ClearChunks
   {Assigns contents from another TPNGObject}
-  else if Source is TPNGObject then
-    AssignPNG(Source as TPNGObject)
+  else if Source is TPngImage then
+    AssignPNG(Source as TPngImage)
   {Copy contents from a TBitmap}
   {$IFDEF UseDelphi}else if Source is TBitmap then
     with Source as TBitmap do
@@ -4418,7 +4418,7 @@ begin
 end;
 
 {Clear all the chunks in the list}
-procedure TPngObject.ClearChunks;
+procedure TPngImage.ClearChunks;
 var
   i: Integer;
 begin
@@ -4431,7 +4431,7 @@ begin
 end;
 
 {Portable Network Graphics object being created as a blank image}
-constructor TPNGObject.CreateBlank(ColorType, BitDepth: Cardinal;
+constructor TPngImage.CreateBlank(ColorType, BitDepth: Cardinal;
   cx, cy: Integer);
 var NewIHDR: TChunkIHDR;
 begin
@@ -4465,7 +4465,7 @@ begin
 end;
 
 {Portable Network Graphics object being created}
-constructor TPngObject.Create;
+constructor TPngImage.Create;
 begin
   {Let it be created}
   inherited Create;
@@ -4482,7 +4482,7 @@ begin
 end;
 
 {Portable Network Graphics object being destroyed}
-destructor TPngObject.Destroy;
+destructor TPngImage.Destroy;
 begin
   {Free object list}
   ClearChunks;
@@ -4495,7 +4495,7 @@ begin
 end;
 
 {Returns linesize and byte offset for pixels}
-procedure TPngObject.GetPixelInfo(var LineSize, Offset: Cardinal);
+procedure TPngImage.GetPixelInfo(var LineSize, Offset: Cardinal);
 begin
   {There must be an Header chunk to calculate size}
   if HeaderPresent then
@@ -4538,7 +4538,7 @@ begin
 end;
 
 {Returns image height}
-function TPngObject.GetHeight: Integer;
+function TPngImage.GetHeight: Integer;
 begin
   {There must be a Header chunk to get the size, otherwise returns 0}
   if HeaderPresent then
@@ -4547,7 +4547,7 @@ begin
 end;
 
 {Returns image width}
-function TPngObject.GetWidth: Integer;
+function TPngImage.GetWidth: Integer;
 begin
   {There must be a Header chunk to get the size, otherwise returns 0}
   if HeaderPresent then
@@ -4556,19 +4556,19 @@ begin
 end;
 
 {Returns if the image is empty}
-function TPngObject.GetEmpty: Boolean;
+function TPngImage.GetEmpty: Boolean;
 begin
   Result := (Chunks.Count = 0);
 end;
 
 {Raises an error}
-procedure TPngObject.RaiseError(ExceptionClass: ExceptClass; Text: String);
+procedure TPngImage.RaiseError(ExceptionClass: ExceptClass; Text: String);
 begin
   raise ExceptionClass.Create(Text);
 end;
 
 {Set the maximum size for IDAT chunk}
-procedure TPngObject.SetMaxIdatSize(const Value: Integer);
+procedure TPngImage.SetMaxIdatSize(const Value: Integer);
 begin
   {Make sure the size is at least 65535}
   if Value < High(Word) then
@@ -4576,7 +4576,7 @@ begin
 end;
 
 {Draws the image using pixel information from TChunkpHYs}
-procedure TPNGObject.DrawUsingPixelInformation(Canvas: TCanvas; Point: TPoint);
+procedure TPngImage.DrawUsingPixelInformation(Canvas: TCanvas; Point: TPoint);
   function Rect(Left, Top, Right, Bottom: Integer): TRect;
   begin
     Result.Left := Left;
@@ -4643,13 +4643,13 @@ end;
 {$ENDIF}
 
 {Returns if it has the pixel information chunk}
-function TPngObject.HasPixelInformation: Boolean;
+function TPngImage.HasPixelInformation: Boolean;
 begin
   Result := (Chunks.ItemFromClass(TChunkpHYs) as tChunkpHYs) <> nil;
 end;
 
 {Returns the pixel information chunk}
-function TPngObject.GetPixelInformation: TChunkpHYs;
+function TPngImage.GetPixelInformation: TChunkpHYs;
 begin
   Result := Chunks.ItemFromClass(TChunkpHYs) as tChunkpHYs;
   if not Assigned(Result) then
@@ -4660,7 +4660,7 @@ begin
 end;
 
 {Returns pointer to the chunk TChunkIHDR which should be the first}
-function TPngObject.GetHeader: TChunkIHDR;
+function TPngImage.GetHeader: TChunkIHDR;
 begin
   {If there is a TChunkIHDR returns it, otherwise returns nil}
   if (Chunks.Count <> 0) and (Chunks.Item[0] is TChunkIHDR) then
@@ -4674,7 +4674,7 @@ begin
 end;
 
 {Draws using partial transparency}
-procedure TPngObject.DrawPartialTrans(DC: HDC; Rect: TRect);
+procedure TPngImage.DrawPartialTrans(DC: HDC; Rect: TRect);
   {Adjust the rectangle structure}
   procedure AdjustRect(var Rect: TRect);
   var
@@ -4909,7 +4909,7 @@ begin
 end;
 
 {Draws the image into a canvas}
-procedure TPngObject.Draw(ACanvas: TCanvas; const Rect: TRect);
+procedure TPngImage.Draw(ACanvas: TCanvas; const Rect: TRect);
 var
   Header: TChunkIHDR;
 begin
@@ -4944,7 +4944,7 @@ const
   PngHeader: Array[0..7] of Char = (#137, #80, #78, #71, #13, #10, #26, #10);
 
 {Loads the image from a stream of data}
-procedure TPngObject.LoadFromStream(Stream: TStream);
+procedure TPngImage.LoadFromStream(Stream: TStream);
 var
   Header    : Array[0..7] of Char;
   HasIDAT   : Boolean;
@@ -5044,20 +5044,20 @@ begin
 end;
 
 {Changing height is not supported}
-procedure TPngObject.SetHeight(Value: Integer);
+procedure TPngImage.SetHeight(Value: Integer);
 begin
   Resize(Width, Value)
 end;
 
 {Changing width is not supported}
-procedure TPngObject.SetWidth(Value: Integer);
+procedure TPngImage.SetWidth(Value: Integer);
 begin
   Resize(Value, Height)
 end;
 
 {$IFDEF UseDelphi}
 {Saves to clipboard format (thanks to Antoine Pottern)}
-procedure TPNGObject.SaveToClipboardFormat(var AFormat: Word;
+procedure TPngImage.SaveToClipboardFormat(var AFormat: Word;
   var AData: THandle; var APalette: HPalette);
 begin
   with TBitmap.Create do
@@ -5072,7 +5072,7 @@ begin
 end;
 
 {Loads data from clipboard}
-procedure TPngObject.LoadFromClipboardFormat(AFormat: Word;
+procedure TPngImage.LoadFromClipboardFormat(AFormat: Word;
   AData: THandle; APalette: HPalette);
 begin
   with TBitmap.Create do
@@ -5085,7 +5085,7 @@ begin
 end;
 
 {Returns if the image is transparent}
-function TPngObject.GetTransparent: Boolean;
+function TPngImage.GetTransparent: Boolean;
 begin
   Result := (TransparencyMode <> ptmNone);
 end;
@@ -5093,7 +5093,7 @@ end;
 {$ENDIF}
 
 {Saving the PNG image to a stream of data}
-procedure TPngObject.SaveToStream(Stream: TStream);
+procedure TPngImage.SaveToStream(Stream: TStream);
 var
   j: Integer;
 begin
@@ -5133,7 +5133,7 @@ begin
 end;
 
 {Loads the image from a resource}
-procedure TPngObject.LoadFromResourceName(Instance: HInst;
+procedure TPngImage.LoadFromResourceName(Instance: HInst;
   const Name: String);
 var
   ResStream: TResourceStream;
@@ -5152,13 +5152,13 @@ begin
 end;
 
 {Loads the png from a resource ID}
-procedure TPngObject.LoadFromResourceID(Instance: HInst; ResID: Integer);
+procedure TPngImage.LoadFromResourceID(Instance: HInst; ResID: Integer);
 begin
   LoadFromResourceName(Instance, String(ResID));
 end;
 
 {Assigns this tpngobject to another object}
-procedure TPngObject.AssignTo(Dest: TPersistent);
+procedure TPngImage.AssignTo(Dest: TPersistent);
 {$IFDEF UseDelphi}
   function DetectPixelFormat: TPixelFormat;
   begin
@@ -5189,8 +5189,8 @@ var
 begin
   {If the destination is also a TPNGObject make it assign}
   {this one}
-  if Dest is TPNGObject then
-    TPNGObject(Dest).AssignPNG(Self)
+  if Dest is TPngImage then
+    TPngImage(Dest).AssignPNG(Self)
   {$IFDEF UseDelphi}
   {In case the destination is a bitmap}
   else if (Dest is TBitmap) and HeaderPresent then
@@ -5217,7 +5217,7 @@ begin
 end;
 
 {Assigns from a bitmap object}
-procedure TPngObject.AssignHandle(Handle: HBitmap; Transparent: Boolean;
+procedure TPngImage.AssignHandle(Handle: HBitmap; Transparent: Boolean;
   TransparentColor: ColorRef);
 var
   BitmapInfo: Windows.TBitmap;
@@ -5279,7 +5279,7 @@ begin
 end;
 
 {Assigns from another PNG}
-procedure TPngObject.AssignPNG(Source: TPNGObject);
+procedure TPngImage.AssignPNG(Source: TPngImage);
 var
   J: Integer;
 begin
@@ -5302,7 +5302,7 @@ begin
 end;
 
 {Returns a alpha data scanline}
-function TPngObject.GetAlphaScanline(const LineIndex: Integer): pByteArray;
+function TPngImage.GetAlphaScanline(const LineIndex: Integer): pByteArray;
 begin
   with Header do
     if (ColorType = COLOR_RGBALPHA) or (ColorType = COLOR_GRAYSCALEALPHA) then
@@ -5312,7 +5312,7 @@ end;
 
 {$IFDEF Store16bits}
 {Returns a png data extra scanline}
-function TPngObject.GetExtraScanline(const LineIndex: Integer): Pointer;
+function TPngImage.GetExtraScanline(const LineIndex: Integer): Pointer;
 begin
   with Header do
     Longint(Result) := (Longint(ExtraImageData) + ((Longint(Height) - 1) *
@@ -5321,7 +5321,7 @@ end;
 {$ENDIF}
 
 {Returns a png data scanline}
-function TPngObject.GetScanline(const LineIndex: Integer): Pointer;
+function TPngImage.GetScanline(const LineIndex: Integer): Pointer;
 begin
   with Header do
     Longint(Result) := (Longint(ImageData) + ((Longint(Height) - 1) *
@@ -5329,7 +5329,7 @@ begin
 end;
 
 {Initialize gamma table}
-procedure TPngObject.InitializeGamma;
+procedure TPngImage.InitializeGamma;
 var
   i: Integer;
 begin
@@ -5342,7 +5342,7 @@ begin
 end;
 
 {Returns the transparency mode used by this png}
-function TPngObject.GetTransparencyMode: TPNGTransparencyMode;
+function TPngImage.GetTransparencyMode: TPNGTransparencyMode;
 var
   TRNS: TChunkTRNS;
 begin
@@ -5370,7 +5370,7 @@ begin
 end;
 
 {Add a text chunk}
-procedure TPngObject.AddtEXt(const Keyword, Text: String);
+procedure TPngImage.AddtEXt(const Keyword, Text: String);
 var
   TextChunk: TChunkTEXT;
 begin
@@ -5380,7 +5380,7 @@ begin
 end;
 
 {Add a text chunk}
-procedure TPngObject.AddzTXt(const Keyword, Text: String);
+procedure TPngImage.AddzTXt(const Keyword, Text: String);
 var
   TextChunk: TChunkzTXt;
 begin
@@ -5390,7 +5390,7 @@ begin
 end;
 
 {Removes the image transparency}
-procedure TPngObject.RemoveTransparency;
+procedure TPngImage.RemoveTransparency;
 var
   TRNS: TChunkTRNS;
 begin
@@ -5419,7 +5419,7 @@ begin
 end;
 
 {Generates alpha information}
-procedure TPngObject.CreateAlpha;
+procedure TPngImage.CreateAlpha;
 var
   TRNS: TChunkTRNS;
 begin
@@ -5461,7 +5461,7 @@ begin
 end;
 
 {Returns transparent color}
-function TPngObject.GetTransparentColor: TColor;
+function TPngImage.GetTransparentColor: TColor;
 var
   TRNS: TChunkTRNS;
 begin
@@ -5472,7 +5472,7 @@ begin
 end;
 
 {$OPTIMIZATION OFF}
-procedure TPngObject.SetTransparentColor(const Value: TColor);
+procedure TPngImage.SetTransparentColor(const Value: TColor);
 var
   TRNS: TChunkTRNS;
 begin
@@ -5496,13 +5496,13 @@ begin
 end;
 
 {Returns if header is present}
-function TPngObject.HeaderPresent: Boolean;
+function TPngImage.HeaderPresent: Boolean;
 begin
   Result := ((Chunks.Count <> 0) and (Chunks.Item[0] is TChunkIHDR))
 end;
 
 {Returns pixel for png using palette and grayscale}
-function GetByteArrayPixel(const png: TPngObject; const X, Y: Integer): TColor;
+function GetByteArrayPixel(const png: TPngImage; const X, Y: Integer): TColor;
 var
   ByteData: Byte;
   DataDepth: Byte;
@@ -5548,7 +5548,7 @@ end;
 {$ENDIF}
 
 {Sets a pixel for grayscale and palette pngs}
-procedure SetByteArrayPixel(const png: TPngObject; const X, Y: Integer;
+procedure SetByteArrayPixel(const png: TPngImage; const X, Y: Integer;
   const Value: TColor);
 const
   ClearFlag: Array[1..8] of Integer = (1, 3, 0, 15, 0, 0, 0, $FF);
@@ -5578,7 +5578,7 @@ begin
 end;
 
 {Returns pixel when png uses RGB}
-function GetRGBLinePixel(const png: TPngObject;
+function GetRGBLinePixel(const png: TPngImage;
   const X, Y: Integer): TColor;
 begin
   with pRGBLine(png.Scanline[Y])^[X] do
@@ -5586,7 +5586,7 @@ begin
 end;
 
 {Sets pixel when png uses RGB}
-procedure SetRGBLinePixel(const png: TPngObject;
+procedure SetRGBLinePixel(const png: TPngImage;
  const X, Y: Integer; Value: TColor);
 begin
   with pRGBLine(png.Scanline[Y])^[X] do
@@ -5598,7 +5598,7 @@ begin
 end;
 
 {Returns pixel when png uses grayscale}
-function GetGrayLinePixel(const png: TPngObject;
+function GetGrayLinePixel(const png: TPngImage;
   const X, Y: Integer): TColor;
 var
   B: Byte;
@@ -5608,14 +5608,14 @@ begin
 end;
 
 {Sets pixel when png uses grayscale}
-procedure SetGrayLinePixel(const png: TPngObject;
+procedure SetGrayLinePixel(const png: TPngImage;
  const X, Y: Integer; Value: TColor);
 begin
   PByteArray(png.Scanline[Y])^[X] := GetRValue(Value);
 end;
 
 {Resizes the PNG image}
-procedure TPngObject.Resize(const CX, CY: Integer);
+procedure TPngImage.Resize(const CX, CY: Integer);
   function Min(const A, B: Integer): Integer;
   begin
     if A < B then Result := A else Result := B;
@@ -5698,7 +5698,7 @@ begin
 end;
 
 {Sets a pixel}
-procedure TPngObject.SetPixels(const X, Y: Integer; const Value: TColor);
+procedure TPngImage.SetPixels(const X, Y: Integer; const Value: TColor);
 begin
   if ((X >= 0) and (X <= Width - 1)) and
         ((Y >= 0) and (Y <= Height - 1)) then
@@ -5715,7 +5715,7 @@ end;
 
 
 {Returns a pixel}
-function TPngObject.GetPixels(const X, Y: Integer): TColor;
+function TPngImage.GetPixels(const X, Y: Integer): TColor;
 begin
   if ((X >= 0) and (X <= Width - 1)) and
         ((Y >= 0) and (Y <= Height - 1)) then
@@ -5732,7 +5732,7 @@ begin
 end;
 
 {Returns the image palette}
-function TPngObject.GetPalette: HPALETTE;
+function TPngImage.GetPalette: HPALETTE;
 begin
   Result := Header.ImagePalette;
 end;
@@ -5772,7 +5772,7 @@ begin
   Result := inherited SaveToStream(Stream);
 end;
 
-procedure TPngObject.DoSetPalette(Value: HPALETTE; const UpdateColors: boolean);
+procedure TPngImage.DoSetPalette(Value: HPALETTE; const UpdateColors: boolean);
 begin
   if (Header.HasPalette)  then
   begin
@@ -5791,13 +5791,13 @@ begin
 end;
 
 {Set palette based on a windows palette handle}
-procedure TPngObject.SetPalette(Value: HPALETTE);
+procedure TPngImage.SetPalette(Value: HPALETTE);
 begin
   DoSetPalette(Value, true);
 end;
 
 {Returns the library version}
-function TPNGObject.GetLibraryVersion: String;
+function TPngImage.GetLibraryVersion: String;
 begin
   Result := LibraryVersion
 end;
@@ -5811,11 +5811,11 @@ initialization
   RegisterCommonChunks;
   {Registers TPNGObject to use with TPicture}
   {$IFDEF UseDelphi}{$IFDEF RegisterGraphic}
-    TPicture.RegisterFileFormat('PNG', 'Portable Network Graphics', TPNGObject);
+    TPicture.RegisterFileFormat('PNG', 'Portable Network Graphics', TPngImage);
   {$ENDIF}{$ENDIF}
 finalization
   {$IFDEF UseDelphi}{$IFDEF RegisterGraphic}
-    TPicture.UnregisterGraphicClass(TPNGObject);
+    TPicture.UnregisterGraphicClass(TPngImage);
   {$ENDIF}{$ENDIF}
   {Free chunk classes}
   FreeChunkClassList;
